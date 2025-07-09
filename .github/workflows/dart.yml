@@ -1,0 +1,25 @@
+name: Flutter Android Build
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.32.6'
+      
+      - name: Install dependencies
+        run: flutter pub get
+        
+      - name: Build APK release
+        run: flutter build apk --release
