@@ -8,7 +8,7 @@ Aplicativo Flutter para cadastro e listagem de educadores, com atribuição de t
 - Adicionar e editar educadores.
 - Atribuir turmas para cada educador.
 - Atualização automática da lista após alterações.
-- Introdução ao auto complete no cadastro de turma listando turmas já cadastradas.
+- Introdução ao auto complete no cadastro de turma em educadores listando turmas já cadastradas.
 - Exclusão de registros.
 - Autenticação e criação de usuários.
 
