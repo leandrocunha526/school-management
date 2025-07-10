@@ -30,6 +30,17 @@ class _EducadoresListState extends State<EducadoresList> {
 
       final dados = List<Map<String, dynamic>>.from(response);
 
+      // Para cada educador, buscar turmas relacionadas na tabela 'turma' (singular)
+      for (final educador in dados) {
+        final educadorId = educador['id'];
+        final turmasResponse = await Supabase.instance.client
+            .from('turma')
+            .select('id')
+            .eq('educador_id', educadorId);
+
+        educador['turmas_count'] = (turmasResponse as List).length;
+      }
+
       final edicaoMaisRecente = dados.isNotEmpty
           ? DateTime.parse(dados.first['created_at']).toLocal()
           : null;
@@ -49,6 +60,50 @@ class _EducadoresListState extends State<EducadoresList> {
     }
   }
 
+  Future<void> deletarEducador(String id) async {
+    final confirmou = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Confirmar exclusão'),
+        content: const Text('Deseja realmente excluir este educador?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancelar'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            child: const Text('Excluir'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmou == true) {
+      try {
+        await Supabase.instance.client
+            .from('educadores')
+            .delete()
+            .eq('id', id);
+
+        await buscarEducadores();
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Educador excluído com sucesso')),
+          );
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Erro ao excluir educador: $e')),
+          );
+        }
+      }
+    }
+  }
+
   Widget _buildEducadorItem(Map<String, dynamic> educador) {
     final nome = educador['nome'] ?? '';
     final periodo = educador['periodo'] ?? '';
@@ -58,6 +113,8 @@ class _EducadoresListState extends State<EducadoresList> {
     final perfil = (perfilRaw == null || perfilRaw.toString().trim().isEmpty)
         ? 'Desconhecido'
         : perfilRaw.toString();
+
+    final turmasCount = educador['turmas_count'] ?? 0;
 
     return GestureDetector(
       onTap: () async {
@@ -79,23 +136,40 @@ class _EducadoresListState extends State<EducadoresList> {
             BoxShadow(color: Colors.black12, blurRadius: 4, offset: Offset(0, 2)),
           ],
         ),
-        child: Column(
+        child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(nome, style: const TextStyle(fontWeight: FontWeight.w600)),
-            const SizedBox(height: 4),
-            Text(
-              'Ano: $ano - Período: $periodo',
-              style: const TextStyle(color: Colors.black54),
-            ),
-            const SizedBox(height: 2),
-            Text(
-              'Perfil: $perfil',
-              style: const TextStyle(
-                color: Colors.black87,
-                fontWeight: FontWeight.w500,
-                fontStyle: FontStyle.italic,
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(nome, style: const TextStyle(fontWeight: FontWeight.w600)),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Ano: $ano - Período: $periodo',
+                    style: const TextStyle(color: Colors.black54),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    'Perfil: $perfil',
+                    style: const TextStyle(
+                      color: Colors.black87,
+                      fontWeight: FontWeight.w500,
+                      fontStyle: FontStyle.italic,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    '$turmasCount turma${turmasCount == 1 ? '' : 's'}',
+                    style: const TextStyle(color: Colors.black54),
+                  ),
+                ],
               ),
+            ),
+            IconButton(
+              icon: const Icon(Icons.delete, color: Colors.red),
+              onPressed: () => deletarEducador(educador['id'].toString()),
+              tooltip: 'Excluir educador',
             ),
           ],
         ),

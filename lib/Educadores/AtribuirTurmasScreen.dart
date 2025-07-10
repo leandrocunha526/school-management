@@ -260,7 +260,7 @@ class _AtribuirTurmasScreenState extends State<AtribuirTurmasScreen> {
               ),
               TextField(
                 controller: emailController,
-                decoration: const InputDecoration(labelText: 'E-mail'),
+                decoration: const InputDecoration(labelText: 'E-mail (opcional)'),
               ),
               TextField(
                 controller: telefoneController,

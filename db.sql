@@ -2,7 +2,7 @@
 CREATE TABLE educadores (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     nome TEXT NOT NULL,
-    email TEXT NOT NULL UNIQUE,
+    email TEXT UNIQUE,
     telefone TEXT,
     perfil TEXT CHECK (perfil IN ('Professor', 'Coordenador')) NOT NULL DEFAULT 'Professor',
     ano_letivo INT,
